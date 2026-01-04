@@ -4,7 +4,7 @@
 import css from './SignUp.module.css'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {register, RegisterRequest} from '@/lib/api/clientApi'
+import {register, RegistrationDetails} from '@/lib/api/clientApi'
 import { useAuthStore } from '@/lib/store/authStore';
 import { isAxiosError } from 'axios';
 import toast from "react-hot-toast"
@@ -17,8 +17,11 @@ const SignUp = () => {
   const handleRegister = async (formData: FormData) => {
     		setError("")
     try {
-      const fromValues = Object.fromEntries(formData) as RegisterRequest;
-      const res = await register(fromValues);
+const email = formData.get('email')?.toString() || '';
+const password = formData.get('password')?.toString() || '';
+const formValues: RegistrationDetails = { email, password };
+
+      const res = await register(formValues);
       if(res) {
         setUser(res)
         toast.success("You have successfully registered!")
