@@ -16,9 +16,11 @@ const EditProfile =  () => {
 
     useEffect(() => {
         getMe().then(user => {
+          if (user) {
           setUserEmail(user.email);
           setUsername(user.username);
           setAvatarUrl(user.avatar);
+          }
         });
     }, []);
 
