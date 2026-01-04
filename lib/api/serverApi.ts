@@ -46,7 +46,7 @@ export async function getMe(): Promise<User | null> {
 
 /* ---------- NOTES ---------- */
 
-export async function fetchNotes(
+export async function fetchServerNotes(
   search: string,
   page: number,
   tag?: string,
