@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import css from './SignInPage.module.css'
-import { login, LoginRequest } from '@/lib/api/clientApi';
+import { login, LoginDetails } from '@/lib/api/clientApi';
 import { isAxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
@@ -13,18 +13,22 @@ export default function SignIn(){
     const router = useRouter();
     const [error, setError] = useState('');
     const handleLogin = async (formData: FormData) => {
-        try {
-            const fromValues = Object.fromEntries(formData.entries()) as LoginRequest;
-            const res = await login(fromValues);
-            if(res) {
-                setUser(res);
-                router.push('/profile');
-            } else {
-                setError('Invalid email or password');
-            }
-        } catch (error) {
-            if (isAxiosError(error)) {
-                setError(error.response?.data?.message || 'An error occurred. Please try again.');
+  try {
+    const email = formData.get('email')?.toString() || '';
+    const password = formData.get('password')?.toString() || '';
+
+    const formValues: LoginDetails = { email, password };
+
+    const res = await login(formValues);
+    if (res) {
+      setUser(res);
+      router.push('/profile');
+    } else {
+      setError('Invalid email or password');
+    }
+  } catch (error) {
+    if (isAxiosError(error)) {
+      setError(error.response?.data?.message || 'An error occurred. Please try again.');
             }
         }
     }
