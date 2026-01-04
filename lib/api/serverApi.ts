@@ -71,7 +71,7 @@ export async function fetchNotes(
   return data;
 }
 
-export async function fetchNoteById(id: Note['id']): Promise<Note> {
+export async function fetchServerNoteById(id: Note['id']): Promise<Note> {
   const cookieStore = cookies();
 
   const { data } = await axios.get(`${baseURL}/notes/${id}`, {
