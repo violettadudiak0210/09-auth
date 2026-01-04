@@ -15,13 +15,9 @@ interface FetchNotesResponse {
 export async function checkSession(): Promise<boolean> {
   try {
     const cookieStore = cookies();
-
     await axios.get(`${baseURL}/auth/session`, {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
+      headers: { Cookie: cookieStore.toString() },
     });
-
     return true;
   } catch {
     return false;
@@ -31,13 +27,9 @@ export async function checkSession(): Promise<boolean> {
 export async function getMe(): Promise<User | null> {
   try {
     const cookieStore = cookies();
-
     const { data } = await axios.get<User>(`${baseURL}/users/me`, {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
+      headers: { Cookie: cookieStore.toString() },
     });
-
     return data;
   } catch {
     return null;
@@ -46,39 +38,27 @@ export async function getMe(): Promise<User | null> {
 
 /* ---------- NOTES ---------- */
 
-export async function fetchServerNote(
+// список нотаток
+export async function fetchNotes (
   search: string,
   page: number,
   tag?: string,
   perPage = 12
 ): Promise<FetchNotesResponse> {
   const cookieStore = cookies();
-
-  const params = {
-    search: search || '',
-    page,
-    perPage,
-    ...(tag && { tag }),
-  };
-
+  const params = { search: search || '', page, perPage, ...(tag && { tag }) };
   const { data } = await axios.get(`${baseURL}/notes`, {
     params,
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
+    headers: { Cookie: cookieStore.toString() },
   });
-
   return data;
 }
 
-export async function fetchServerNoteById(id: Note['id']): Promise<Note> {
+// нотатка по id
+export async function fetchNoteById(id: Note['id']): Promise<Note> {
   const cookieStore = cookies();
-
   const { data } = await axios.get(`${baseURL}/notes/${id}`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
+    headers: { Cookie: cookieStore.toString() },
   });
-
   return data;
 }
