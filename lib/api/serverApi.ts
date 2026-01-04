@@ -6,7 +6,7 @@ import type { NoteResponse } from "./clientApi";
 import type { AxiosResponse } from "axios";
  
 
-export const checkServerSession = async (): Promise<AxiosResponse> => {
+export const checkServerSession = async () => {
   const cookieStore = await cookies();
   const response = await nextServer.get('/auth/session', {
     headers: {
