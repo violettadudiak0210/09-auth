@@ -1,95 +1,92 @@
-import type {Note} from "@/types/note";
-import { nextServer } from "./api";
-import { User } from "@/types/user";
+import { client } from './api';
+import { User } from '@/types/user';
+import { Note } from '@/types/note';
 
-export interface NoteResponse {
-    notes: Note[];
-    totalPages: number;
+interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
 }
 
-export interface CreateNoteParams {
-    title: string;
-    content: string;
-    tag: 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
+export interface CreateNoteData {
+  title: string;
+  tag: 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
+  content: string;
 }
 
-export type RegisterRequest = {
-    email: string,
-    password: string,
+export interface RegistrationDetails {
+  email: string;
+  password: string;
 }
 
-export type LoginRequest =  {
-    email: string,
-    password: string,
+export interface LoginDetails {
+  email: string;
+  password: string;
 }
 
-export type UpdateMeRequest = {
-    username?: string,
+export interface UpdateUserRequest {
+  username: string;
 }
 
-export const checkSession = async () => {
-    const res = await nextServer.get('/auth/session');
-    return res;
-};
+/* ---------- NOTES ---------- */
 
-export const getMe = async () => {
-  const res = await nextServer.get<User>('users/me');
+export async function fetchNotes(
+  search: string,
+  page: number,
+  tag: string,
+  perPage = 12
+): Promise<FetchNotesResponse> {
+  const params = {
+    search: search || '',
+    page,
+    perPage,
+    ...(tag && { tag }),
+  };
+
+  const { data } = await client.get('/notes', { params });
+  return data;
+}
+
+export async function fetchNoteById(id: Note['id']): Promise<Note> {
+  const { data } = await client.get(`/notes/${id}`);
+  return data;
+}
+
+export async function createNote(note: CreateNoteData): Promise<Note> {
+  const { data } = await client.post('/notes', note);
+  return data;
+}
+
+export async function deleteNote(id: Note['id']): Promise<Note> {
+  const { data } = await client.delete(`/notes/${id}`);
+  return data;
+}
+
+/* ---------- AUTH ---------- */
+
+export async function register(data: RegistrationDetails): Promise<User> {
+  const res = await client.post('/auth/register', data);
   return res.data;
-};
-
-export const updateMe = async (data: UpdateMeRequest): Promise<User> => {
-    const res = await nextServer.patch<User>('users/me', data);
-    return res.data;
 }
 
-export const register = async (userData: RegisterRequest) => {
-	const { data } = await nextServer.post<User>("auth/register", userData)
-	return data;
+export async function login(data: LoginDetails): Promise<User> {
+  const res = await client.post('/auth/login', data);
+  return res.data;
 }
 
-export const login = async (data: LoginRequest) => {
-    const res = await nextServer.post<User>('auth/login', data);
-    return res.data;
+export async function logout(): Promise<void> {
+  await client.post('/auth/logout');
 }
 
-export const logout = async (): Promise<void> => {
-    await nextServer.post('auth/logout');
+export async function getMe(): Promise<User | null> {
+  try {
+    const { data } = await client.get<User>('/users/me');
+    return data;
+  } catch {
+    return null;
+  }
 }
 
-export const fetchNotes = async (page: number, query: string, tag?: string): Promise<NoteResponse> => {
-    const params = {
-        params: {
-            search: query,
-            tag: tag,
-            page: page,
-            perPage: 12,
-        },
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    }
-    const response = await nextServer.get<NoteResponse>('/notes', params);
-    return response.data;
-}
-
-export const fetchNoteById = async (id: string): Promise<Note> => {
-    const res = await nextServer.get<Note>(`/notes/${id}`, {headers: {
-        'Content-Type': 'application/json',
-    }});
-    return res.data;
-}
-
-export const createNote = async (newNote: CreateNoteParams): Promise<Note> => {
-    
-    const res = await nextServer.post<Note>('/notes', newNote, {headers: {
-        'Content-Type': 'application/json',
-    }});
-    return res.data;
-}
-
-export const deleteNote = async (id: string): Promise<Note> => {
-    const res = await nextServer.delete<Note>(`/notes/${id}`, {headers: {
-        'Content-Type': 'application/json',
-    }})
-    return res.data;
+export async function updateMe(data: UpdateUserRequest): Promise<User> {
+  const res = await client.patch('/users/me', data);
+  return res.data;
 }

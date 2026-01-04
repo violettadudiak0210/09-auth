@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import css from './ProfilePage.module.css'
-import { getServerMe } from '@/lib/api/serverApi';
+import { getMe } from '@/lib/api/serverApi';
 import Image from 'next/image';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation'; // Import redirect from Next.js
 
 export async function generateMetadata(): Promise<Metadata> {
-  const user = await getServerMe();
+  const user = await getMe();
   
   // Handle the case where the user is null
   if (!user) {
@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const Profile = async () => {
-  const user = await getServerMe();
+  const user = await getMe();
 
   // If the user is not found, redirect them to the sign-in page
   if (!user) {

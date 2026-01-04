@@ -1,10 +1,12 @@
-import axios from "axios"
+// lib/api/api.ts
 
-const BASE_URL = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN + '/api';
+import axios, { AxiosError } from 'axios';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL + '/api';
+export const client = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL + '/api',
+  withCredentials: true,
+});
 
-export const nextServer = axios.create({
-    baseURL: BASE_URL,
-    withCredentials: true,
-})
+export type ApiError = AxiosError<{
+  error: string;
+}>;

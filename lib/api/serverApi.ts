@@ -1,54 +1,84 @@
-import { cookies } from "next/headers";
-import { nextServer } from "./api"
-import type{ Note } from '@/types/note';
-import type { User } from "@/types/user";
-import type { NoteResponse } from "./clientApi";
-import type { AxiosResponse } from "axios";
- 
+import axios from 'axios';
+import { cookies } from 'next/headers';
+import { User } from '@/types/user';
+import { Note } from '@/types/note';
 
-export const checkServerSession = async () => {
-  const cookieStore = await cookies();
-  const response = await nextServer.get('/auth/session', {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
-  return response;
-};
+const baseURL = process.env.NEXT_PUBLIC_API_URL + '/api';
 
-export const getServerMe = async (): Promise<User | null> => {
-  const cookieStore = await cookies();
-  const {data} = await nextServer.get('/users/me', {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
-    return data;
+interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
 }
 
-export const fetchServerNotes = async (page: number, query: string, tag?: string): Promise<NoteResponse> => {
-  const cookieStore = await cookies();
-    const params = {
-        params: {
-            search: query,
-            tag: tag,
-            page: page,
-            perPage: 12,
-        },
-        headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookieStore.toString(),
-        }
-    }
-    const response = await nextServer.get<NoteResponse>('/notes', params);
-    return response.data;
-}
+/* ---------- AUTH ---------- */
 
-export const fetchServerNoteById = async (id: string): Promise<Note> => {
-  const cookieStore = await cookies();
-    const res = await nextServer.get<Note>(`/notes/${id}`, {headers: {
-        'Content-Type': 'application/json',
+export async function checkSession(): Promise<boolean> {
+  try {
+    const cookieStore = cookies();
+
+    await axios.get(`${baseURL}/auth/session`, {
+      headers: {
         Cookie: cookieStore.toString(),
-    }});
-    return res.data;
+      },
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function getMe(): Promise<User | null> {
+  try {
+    const cookieStore = cookies();
+
+    const { data } = await axios.get<User>(`${baseURL}/users/me`, {
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
+    });
+
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/* ---------- NOTES ---------- */
+
+export async function fetchNotes(
+  search: string,
+  page: number,
+  tag?: string,
+  perPage = 12
+): Promise<FetchNotesResponse> {
+  const cookieStore = cookies();
+
+  const params = {
+    search: search || '',
+    page,
+    perPage,
+    ...(tag && { tag }),
+  };
+
+  const { data } = await axios.get(`${baseURL}/notes`, {
+    params,
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+
+  return data;
+}
+
+export async function fetchNoteById(id: Note['id']): Promise<Note> {
+  const cookieStore = cookies();
+
+  const { data } = await axios.get(`${baseURL}/notes/${id}`, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+
+  return data;
 }
