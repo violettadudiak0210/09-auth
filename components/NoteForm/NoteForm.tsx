@@ -2,7 +2,7 @@
 
 import css from "./NoteForm.module.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote , type CreateNoteParams} from "@/lib/api/clientApi";
+import { createNote , type CreateNoteData} from "@/lib/api/clientApi";
 import { useNoteDraftStore } from "@/lib/store/noteStore";
 import {useRouter} from 'next/navigation'
 
@@ -32,10 +32,10 @@ import {useRouter} from 'next/navigation'
     },
   })
        const createNewNote = (formData: FormData) => {
-      const newNote: CreateNoteParams = {
+      const newNote: CreateNoteData = {
         title: String(formData.get('title') ?? ''),
         content: String(formData.get('content') ?? ''),
-        tag: String(formData.get('tag')) as CreateNoteParams['tag'],
+        tag: String(formData.get('tag')) as CreateNoteData['tag'],
       };
     createNoteMutation.mutate(newNote);
 }
