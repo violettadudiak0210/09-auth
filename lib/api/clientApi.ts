@@ -1,4 +1,4 @@
-import { client } from './api';
+import { api } from './axios';
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
 
@@ -35,87 +35,45 @@ export async function fetchNotes(
   tag?: string,
   perPage = 12
 ): Promise<FetchNotesResponse> {
-  const params = {
-    search: search || '',
-    page,
-    perPage,
-    ...(tag && { tag }),
-  };
-
-  const { data } = await client.get<FetchNotesResponse>('/notes', {
-    params,
-    withCredentials: true,
-  });
-
+  const params = { search: search || '', page, perPage, ...(tag && { tag }) };
+  const { data } = await api.get<FetchNotesResponse>('/notes', { params });
   return data;
 }
 
 export async function fetchNoteById(id: Note['id']): Promise<Note> {
-  const { data } = await client.get<Note>(`/notes/${id}`, {
-    withCredentials: true,
-  });
-
+  const { data } = await api.get<Note>(`/notes/${id}`);
   return data;
 }
 
 export async function createNote(note: CreateNoteData): Promise<Note> {
-  const { data } = await client.post<Note>('/notes', note, {
-    withCredentials: true,
-  });
-
+  const { data } = await api.post<Note>('/notes', note);
   return data;
 }
 
 export async function deleteNote(id: Note['id']): Promise<Note> {
-  const { data } = await client.delete<Note>(`/notes/${id}`, {
-    withCredentials: true,
-  });
-
+  const { data } = await api.delete<Note>(`/notes/${id}`);
   return data;
 }
 
 /* ---------- AUTH ---------- */
 
-export interface SessionResponse {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export async function checkSession(): Promise<SessionResponse> {
-  const { data } = await client.get<SessionResponse>('/auth/session', {
-    withCredentials: true,
-  });
-
-  return data; // { accessToken, refreshToken }
-}
-
 export async function register(data: RegistrationDetails): Promise<User> {
-  const { data: user } = await client.post<User>('/auth/register', data, {
-    withCredentials: true,
-  });
-
+  const { data: user } = await api.post<User>('/auth/register', data);
   return user;
 }
 
 export async function login(data: LoginDetails): Promise<User> {
-  const { data: user } = await client.post<User>('/auth/login', data, {
-    withCredentials: true,
-  });
-
+  const { data: user } = await api.post<User>('/auth/login', data);
   return user;
 }
 
 export async function logout(): Promise<void> {
-  await client.post('/auth/logout', null, {
-    withCredentials: true,
-  });
+  await api.post('/auth/logout');
 }
 
 export async function getMe(): Promise<User | null> {
   try {
-    const { data } = await client.get<User>('/users/me', {
-      withCredentials: true,
-    });
+    const { data } = await api.get<User>('/users/me');
     return data;
   } catch {
     return null;
@@ -123,9 +81,6 @@ export async function getMe(): Promise<User | null> {
 }
 
 export async function updateMe(data: UpdateUserRequest): Promise<User> {
-  const { data: user } = await client.patch<User>('/users/me', data, {
-    withCredentials: true,
-  });
-
+  const { data: user } = await api.patch<User>('/users/me', data);
   return user;
 }
