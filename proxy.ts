@@ -1,29 +1,50 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { NextRequest, NextResponse } from 'next/server';
 import { checkSession } from '@/lib/api/serverApi';
 
 const PRIVATE_ROUTES = ['/profile', '/notes'];
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 
-export async function proxy(pathname: string) {
-  const cookieStore = await cookies(); 
+export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
 
-  const accessToken = cookieStore.get?.('accessToken')?.value;
-  const refreshToken = cookieStore.get?.('refreshToken')?.value;
+  const accessToken = request.cookies.get('accessToken')?.value;
+  const refreshToken = request.cookies.get('refreshToken')?.value;
 
-  const isPrivate = PRIVATE_ROUTES.some(r => pathname.startsWith(r));
-  const isAuth = AUTH_ROUTES.some(r => pathname.startsWith(r));
+  const isPrivate = PRIVATE_ROUTES.some(route =>
+    pathname.startsWith(route)
+  );
 
-  if (!accessToken) {
-    if (refreshToken) {
-      const ok = await checkSession();
-      if (!ok && isPrivate) redirect('/sign-in');
-      return;
+  const isAuth = AUTH_ROUTES.some(route =>
+    pathname.startsWith(route)
+  );
+
+  
+  if (!accessToken && refreshToken) {
+    const ok = await checkSession();
+
+   
+    if (!ok && isPrivate) {
+      return NextResponse.redirect(
+        new URL('/sign-in', request.url)
+      );
     }
 
-    if (isPrivate) redirect('/sign-in');
-    return;
+   
+    return NextResponse.next();
   }
 
-  if (isAuth) redirect('/profile');
+  if (!accessToken && isPrivate) {
+    return NextResponse.redirect(
+      new URL('/sign-in', request.url)
+    );
+  }
+
+  if (accessToken && isAuth) {
+    return NextResponse.redirect(
+      new URL('/profile', request.url)
+    );
+  }
+
+  
+  return NextResponse.next();
 }
