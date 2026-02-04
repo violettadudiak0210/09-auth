@@ -57,6 +57,15 @@ export async function deleteNote(id: Note['id']): Promise<Note> {
 
 /* ---------- AUTH ---------- */
 
+export async function checkSession(): Promise<boolean> {
+  try {
+    await api.get('/auth/session');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function register(data: RegistrationDetails): Promise<User> {
   const { data: user } = await api.post<User>('/auth/register', data);
   return user;
