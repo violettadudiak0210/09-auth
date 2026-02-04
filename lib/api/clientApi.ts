@@ -1,14 +1,8 @@
-import { AxiosResponse } from 'axios';
 import { client } from './api';
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
 
-interface FetchNotesResponse {
-  notes: Note[];
-  totalPages: number;
-}
-
-export interface NoteResponse {
+export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
 }
@@ -38,7 +32,7 @@ export interface UpdateUserRequest {
 export async function fetchNotes(
   search: string,
   page: number,
-  tag: string,
+  tag?: string,
   perPage = 12
 ): Promise<FetchNotesResponse> {
   const params = {
@@ -82,26 +76,33 @@ export async function deleteNote(id: Note['id']): Promise<Note> {
 
 /* ---------- AUTH ---------- */
 
-export async function checkSession(): Promise<AxiosResponse> {
-  return await client.get('/auth/session', {
+export interface SessionResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export async function checkSession(): Promise<SessionResponse> {
+  const { data } = await client.get<SessionResponse>('/auth/session', {
     withCredentials: true,
   });
+
+  return data; // { accessToken, refreshToken }
 }
 
 export async function register(data: RegistrationDetails): Promise<User> {
-  const res = await client.post<User>('/auth/register', data, {
+  const { data: user } = await client.post<User>('/auth/register', data, {
     withCredentials: true,
   });
 
-  return res.data;
+  return user;
 }
 
 export async function login(data: LoginDetails): Promise<User> {
-  const res = await client.post<User>('/auth/login', data, {
+  const { data: user } = await client.post<User>('/auth/login', data, {
     withCredentials: true,
   });
 
-  return res.data;
+  return user;
 }
 
 export async function logout(): Promise<void> {
@@ -115,7 +116,6 @@ export async function getMe(): Promise<User | null> {
     const { data } = await client.get<User>('/users/me', {
       withCredentials: true,
     });
-
     return data;
   } catch {
     return null;
@@ -123,9 +123,9 @@ export async function getMe(): Promise<User | null> {
 }
 
 export async function updateMe(data: UpdateUserRequest): Promise<User> {
-  const res = await client.patch<User>('/users/me', data, {
+  const { data: user } = await client.patch<User>('/users/me', data, {
     withCredentials: true,
   });
 
-  return res.data;
+  return user;
 }

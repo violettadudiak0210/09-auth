@@ -1,26 +1,35 @@
 import { cookies } from 'next/headers';
-import { AxiosResponse } from 'axios';
-
 import { api } from './axios';
-
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
 
-interface FetchNotesResponse {
+export interface SessionResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
 /* ---------- AUTH ---------- */
 
-export async function checkSession(): Promise<AxiosResponse> {
-  const cookieStore = cookies();
+export async function checkSession(): Promise<SessionResponse | null> {
+  try {
+    const cookieStore = cookies();
 
-  return await api.get('/auth/session', {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
+    const { data } = await api.get<SessionResponse>('/auth/session', {
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
+      withCredentials: true,
+    });
+
+    return data; // { accessToken, refreshToken }
+  } catch {
+    return null;
+  }
 }
 
 export async function getMe(): Promise<User | null> {
@@ -31,6 +40,7 @@ export async function getMe(): Promise<User | null> {
       headers: {
         Cookie: cookieStore.toString(),
       },
+      withCredentials: true,
     });
 
     return data;
@@ -61,6 +71,7 @@ export async function fetchNotes(
     headers: {
       Cookie: cookieStore.toString(),
     },
+    withCredentials: true,
   });
 
   return data;
@@ -73,6 +84,7 @@ export async function fetchNoteById(id: Note['id']): Promise<Note> {
     headers: {
       Cookie: cookieStore.toString(),
     },
+    withCredentials: true,
   });
 
   return data;
