@@ -10,28 +10,24 @@ type Props = {
 
 const AuthProvider = ({ children }: Props) => {
   const setUser = useAuthStore((state) => state.setUser);
-  const clearIsAuthenticated = useAuthStore((state) => state.clearIsAuthenticated);
+  const clearIsAuthenticated = useAuthStore(
+    (state) => state.clearIsAuthenticated
+  );
 
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        // Викликаємо checkSession, отримуємо токени
-        const session = await checkSession();
+      // checkSession тепер повертає { success: boolean }
+      const sessionOk = await checkSession();
 
-        if (!session || !session.data.accessToken) {
-          // якщо сесія порожня або немає accessToken
-          clearIsAuthenticated();
-          return;
-        }
+      if (!sessionOk.success) {  // <-- виправлено тут
+        clearIsAuthenticated();
+        return;
+      }
 
-        // Тепер отримуємо користувача
-        const user = await getMe();
-        if (user) {
-          setUser(user);
-        } else {
-          clearIsAuthenticated();
-        }
-      } catch {
+      const user = await getMe();
+      if (user) {
+        setUser(user);
+      } else {
         clearIsAuthenticated();
       }
     };
