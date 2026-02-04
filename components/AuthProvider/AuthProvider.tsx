@@ -4,27 +4,18 @@ import { useEffect } from 'react';
 import { getMe } from '@/lib/api/clientApi';
 import { useAuthStore } from '@/lib/store/authStore';
 
-type Props = {
-  children: React.ReactNode;
-};
+type Props = { children: React.ReactNode };
 
 const AuthProvider = ({ children }: Props) => {
   const setUser = useAuthStore((state) => state.setUser);
-  const clearIsAuthenticated = useAuthStore(
-    (state) => state.clearIsAuthenticated
-  );
+  const clearIsAuthenticated = useAuthStore((state) => state.clearIsAuthenticated);
 
   useEffect(() => {
     const fetchUser = async () => {
       const user = await getMe();
-
-      if (user) {
-        setUser(user);
-      } else {
-        clearIsAuthenticated();
-      }
+      if (user) setUser(user);
+      else clearIsAuthenticated();
     };
-
     fetchUser();
   }, [setUser, clearIsAuthenticated]);
 
