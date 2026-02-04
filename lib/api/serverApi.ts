@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
+import { AxiosResponse } from 'axios';
 import { api } from './axios';
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
-import { AxiosResponse } from 'axios';
 
 interface FetchNotesResponse {
   notes: Note[];
@@ -10,24 +10,25 @@ interface FetchNotesResponse {
 }
 
 export interface SessionResponse {
-  accessToken?: string;
-  refreshToken?: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 /* ---------- AUTH ---------- */
 
 export async function checkSession(): Promise<SessionResponse | null> {
-  const cookieStore = cookies();
-
   try {
-    const res: AxiosResponse<any> = await api.get('/auth/session', {
-      headers: { Cookie: cookieStore.toString() },
+    const cookieStore = cookies();
+
+    const res: AxiosResponse<SessionResponse> = await api.get('/auth/session', {
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
     });
 
-    return {
-      accessToken: res.data.accessToken,
-      refreshToken: res.data.refreshToken,
-    };
+    if (!res.data.accessToken || !res.data.refreshToken) return null;
+
+    return res.data;
   } catch {
     return null;
   }
@@ -38,7 +39,9 @@ export async function getMe(): Promise<User | null> {
     const cookieStore = cookies();
 
     const { data } = await api.get<User>('/users/me', {
-      headers: { Cookie: cookieStore.toString() },
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
     });
 
     return data;
@@ -66,7 +69,9 @@ export async function fetchNotes(
 
   const { data } = await api.get<FetchNotesResponse>('/notes', {
     params,
-    headers: { Cookie: cookieStore.toString() },
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
   });
 
   return data;
@@ -76,7 +81,9 @@ export async function fetchNoteById(id: Note['id']): Promise<Note> {
   const cookieStore = cookies();
 
   const { data } = await api.get<Note>(`/notes/${id}`, {
-    headers: { Cookie: cookieStore.toString() },
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
   });
 
   return data;

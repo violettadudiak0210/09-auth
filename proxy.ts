@@ -13,7 +13,7 @@ export async function proxy(request: NextRequest) {
   const isPrivate = PRIVATE_ROUTES.some(route => pathname.startsWith(route));
   const isAuth = AUTH_ROUTES.some(route => pathname.startsWith(route));
 
-  // Якщо немає accessToken, але є refreshToken
+  // якщо немає accessToken, але є refreshToken
   if (!accessToken && refreshToken) {
     const session: SessionResponse | null = await checkSession();
 
@@ -22,21 +22,21 @@ export async function proxy(request: NextRequest) {
       return NextResponse.next();
     }
 
+    // якщо є нові токени, встановлюємо їх у куки
     const response = NextResponse.next();
-
-    if (session.accessToken) response.cookies.set('accessToken', session.accessToken, { path: '/' });
-    if (session.refreshToken) response.cookies.set('refreshToken', session.refreshToken, { path: '/' });
+    response.cookies.set('accessToken', session.accessToken, { path: '/' });
+    response.cookies.set('refreshToken', session.refreshToken, { path: '/' });
 
     if (isPrivate) return NextResponse.redirect(new URL('/profile', request.url));
     return response;
   }
 
-  // Якщо немає токена та маршрут приватний
+  // якщо немає токена та маршрут приватний
   if (!accessToken && isPrivate) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  // Якщо користувач авторизований, але зайшов на auth сторінку
+  // якщо користувач авторизований, але зайшов на auth сторінку
   if (accessToken && isAuth) {
     return NextResponse.redirect(new URL('/profile', request.url));
   }
